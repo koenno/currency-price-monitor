@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -74,10 +73,12 @@ func TestShouldReturnResponseDescriptorWhenNoError(t *testing.T) {
 
 	// then
 	assert.NoError(t, err)
+	assert.NotZero(t, resp.ID)
+	assert.NotZero(t, resp.Time)
 	assert.Equal(t, fakeServer.URL, resp.URL)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.True(t, resp.JSON)
 	assert.True(t, resp.Valid)
-	assert.Greater(t, resp.Duration, 0*time.Second)
+	assert.NotZero(t, resp.Duration)
 	assert.Equal(t, expectedPayload, resp.Payload)
 }
