@@ -30,7 +30,7 @@ func NewCurrencyIntervalNotifier(out io.Writer, interval ClosedInterval) Currenc
 
 func (n CurrencyIntervalWriter) Process(ctx context.Context, desc request.Descriptor) error {
 	for i := 0; i < len(desc.Payload.Rates); i++ {
-		if desc.Payload.Rates[i].Value >= n.interval.A && desc.Payload.Rates[i].Value <= n.interval.B {
+		if desc.Payload.Rates[i].Value < n.interval.A || desc.Payload.Rates[i].Value > n.interval.B {
 			desc.Payload.Rates[i].WriteTo(n.out)
 		}
 	}
