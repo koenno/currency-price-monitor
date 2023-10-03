@@ -13,15 +13,15 @@ import (
 
 func TestShouldCallAllRegisteredProcessors(t *testing.T) {
 	// given
-	procMock1 := mocks.NewProcessor[string](t)
-	procMock2 := mocks.NewProcessor[string](t)
-	input := make(chan request.Descriptor[string], 2)
-	descs := []request.Descriptor[string]{newDescriptor("1"), newDescriptor("2")}
+	procMock1 := mocks.NewProcessor(t)
+	procMock2 := mocks.NewProcessor(t)
+	input := make(chan request.Descriptor, 2)
+	descs := []request.Descriptor{newDescriptor("1"), newDescriptor("2")}
 	input <- descs[0]
 	input <- descs[1]
 	close(input)
 
-	sut := NewScheduler[string]()
+	sut := NewScheduler()
 	sut.Register(procMock1)
 	sut.Register(procMock2)
 
@@ -40,15 +40,15 @@ func TestShouldCallAllRegisteredProcessors(t *testing.T) {
 
 func TestShouldContinueProcessingWhenSomeProcessorsFail(t *testing.T) {
 	// given
-	procMock1 := mocks.NewProcessor[string](t)
-	procMock2 := mocks.NewProcessor[string](t)
-	input := make(chan request.Descriptor[string], 2)
-	descs := []request.Descriptor[string]{newDescriptor("1"), newDescriptor("2")}
+	procMock1 := mocks.NewProcessor(t)
+	procMock2 := mocks.NewProcessor(t)
+	input := make(chan request.Descriptor, 2)
+	descs := []request.Descriptor{newDescriptor("1"), newDescriptor("2")}
 	input <- descs[0]
 	input <- descs[1]
 	close(input)
 
-	sut := NewScheduler[string]()
+	sut := NewScheduler()
 	sut.Register(procMock1)
 	sut.Register(procMock2)
 
@@ -65,8 +65,8 @@ func TestShouldContinueProcessingWhenSomeProcessorsFail(t *testing.T) {
 	procMock2.AssertExpectations(t)
 }
 
-func newDescriptor(ID string) request.Descriptor[string] {
-	return request.Descriptor[string]{
+func newDescriptor(ID string) request.Descriptor {
+	return request.Descriptor{
 		ID:              ID,
 		URL:             "http://some/domain.com",
 		Time:            time.Time{},
@@ -74,6 +74,6 @@ func newDescriptor(ID string) request.Descriptor[string] {
 		JSON:            true,
 		Valid:           true,
 		Duration:        0,
-		Payload:         "",
+		Payload:         request.Currency{},
 	}
 }

@@ -16,9 +16,9 @@ func TestShouldStopWhenContextIsCancelled(t *testing.T) {
 	// given
 	requestsNumber := 1
 	requestsInterval := time.Minute
-	requesterMock := mocks.NewRequester[string](t)
+	requesterMock := mocks.NewRequester(t)
 	req, _ := http.NewRequest(http.MethodGet, "some.domain.com", nil)
-	sut := New[string](requesterMock, req)
+	sut := New(requesterMock, req)
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
@@ -29,7 +29,7 @@ func TestShouldStopWhenContextIsCancelled(t *testing.T) {
 	output := sut.Start(ctx, uint(requestsNumber), requestsInterval)
 
 	// then
-	var descs []request.Descriptor[string]
+	var descs []request.Descriptor
 	for d := range output {
 		descs = append(descs, d)
 	}
@@ -40,9 +40,9 @@ func TestShouldSendReceivedDescriptorToOutputChannel(t *testing.T) {
 	// given
 	requestsNumber := 1
 	requestsInterval := time.Minute
-	requesterMock := mocks.NewRequester[string](t)
+	requesterMock := mocks.NewRequester(t)
 	req, _ := http.NewRequest(http.MethodGet, "some.domain.com", nil)
-	sut := New[string](requesterMock, req)
+	sut := New(requesterMock, req)
 	ctx, cancel := context.WithCancel(context.Background())
 	timer := time.NewTimer(500 * time.Millisecond)
 	go func() {
@@ -57,7 +57,7 @@ func TestShouldSendReceivedDescriptorToOutputChannel(t *testing.T) {
 	output := sut.Start(ctx, uint(requestsNumber), requestsInterval)
 
 	// then
-	var descs []request.Descriptor[string]
+	var descs []request.Descriptor
 	for d := range output {
 		descs = append(descs, d)
 	}
@@ -70,9 +70,9 @@ func TestShouldUpdateMonitorWithTimeInterval(t *testing.T) {
 	expectedAllRequestsNumber := 4
 	requestsNumber := 2
 	requestsInterval := 100 * time.Millisecond
-	requesterMock := mocks.NewRequester[string](t)
+	requesterMock := mocks.NewRequester(t)
 	req, _ := http.NewRequest(http.MethodGet, "some.domain.com", nil)
-	sut := New[string](requesterMock, req)
+	sut := New(requesterMock, req)
 	ctx, cancel := context.WithCancel(context.Background())
 	timer := time.NewTimer(200 * time.Millisecond)
 	go func() {
@@ -87,15 +87,15 @@ func TestShouldUpdateMonitorWithTimeInterval(t *testing.T) {
 	output := sut.Start(ctx, uint(requestsNumber), requestsInterval)
 
 	// then
-	var descs []request.Descriptor[string]
+	var descs []request.Descriptor
 	for d := range output {
 		descs = append(descs, d)
 	}
 	assert.GreaterOrEqual(t, len(descs), expectedAllRequestsNumber)
 }
 
-func newDescriptor(ID string) request.Descriptor[string] {
-	return request.Descriptor[string]{
+func newDescriptor(ID string) request.Descriptor {
+	return request.Descriptor{
 		ID:              ID,
 		URL:             "http://some/domain.com",
 		Time:            time.Time{},
@@ -103,6 +103,6 @@ func newDescriptor(ID string) request.Descriptor[string] {
 		JSON:            true,
 		Valid:           true,
 		Duration:        0,
-		Payload:         "",
+		Payload:         request.Currency{},
 	}
 }

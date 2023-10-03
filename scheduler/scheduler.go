@@ -10,23 +10,23 @@ import (
 )
 
 //go:generate mockery --name=Processor --case underscore --with-expecter
-type Processor[T any] interface {
-	Process(context.Context, request.Descriptor[T]) error
+type Processor interface {
+	Process(context.Context, request.Descriptor) error
 }
 
-type Scheduler[T any] struct {
-	processors []Processor[T]
+type Scheduler struct {
+	processors []Processor
 }
 
-func NewScheduler[T any]() *Scheduler[T] {
-	return &Scheduler[T]{}
+func NewScheduler() *Scheduler {
+	return &Scheduler{}
 }
 
-func (r *Scheduler[T]) Register(processor Processor[T]) {
+func (r *Scheduler) Register(processor Processor) {
 	r.processors = append(r.processors, processor)
 }
 
-func (s *Scheduler[T]) Process(ctx context.Context, input <-chan request.Descriptor[T]) {
+func (s *Scheduler) Process(ctx context.Context, input <-chan request.Descriptor) {
 	for desc := range input {
 		err := s.processSingle(ctx, desc)
 		if err != nil {
@@ -35,7 +35,7 @@ func (s *Scheduler[T]) Process(ctx context.Context, input <-chan request.Descrip
 	}
 }
 
-func (s *Scheduler[T]) processSingle(ctx context.Context, desc request.Descriptor[T]) error {
+func (s *Scheduler) processSingle(ctx context.Context, desc request.Descriptor) error {
 	var (
 		wg      sync.WaitGroup
 		errsMtx sync.Mutex
@@ -43,7 +43,7 @@ func (s *Scheduler[T]) processSingle(ctx context.Context, desc request.Descripto
 	)
 	wg.Add(len(s.processors))
 	for _, p := range s.processors {
-		go func(p Processor[T]) {
+		go func(p Processor) {
 			defer wg.Done()
 			defer errsMtx.Unlock()
 			err := p.Process(ctx, desc)

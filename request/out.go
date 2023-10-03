@@ -11,7 +11,7 @@ type Writer interface {
 	io.Writer
 }
 
-func Out[T any](input <-chan Descriptor[T], output Writer) {
+func Out(input <-chan Descriptor, output Writer) {
 	for desc := range input {
 		_, err := desc.WriteTo(output)
 		if err != nil {

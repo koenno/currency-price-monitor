@@ -32,7 +32,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mainClient := client.New[nbp.CurrencyResponse]()
+	mainClient := client.New[nbp.CurrencyResponse](nbp.NewConverter())
 
 	nbpClient := nbp.NewCurrencyClient(nbpDomain)
 	nbpReq, err := nbpClient.NewRequest(ctx, nbp.WithCurrency(currency.EUR), nbp.WithHistory(100))
@@ -40,13 +40,13 @@ func main() {
 		log.Fatalf("failed to create NBP request: %v", err)
 	}
 
-	monitorSvc := monitor.New[nbp.CurrencyResponse](mainClient, nbpReq)
+	monitorSvc := monitor.New(mainClient, nbpReq)
 	requestsPipe := monitorSvc.Start(ctx, requestsNo, requestsInterval)
 
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	writer := processor.NewWriter[nbp.CurrencyResponse](multiWriter)
 
-	sched := scheduler.NewScheduler[nbp.CurrencyResponse]()
+	sched := scheduler.NewScheduler()
 	sched.Register(writer)
 	sched.Process(ctx, requestsPipe)
 }

@@ -10,24 +10,24 @@ import (
 )
 
 //go:generate mockery --name=Requester --case underscore --with-expecter
-type Requester[T any] interface {
-	Process(req *http.Request) (request.Descriptor[T], error)
+type Requester interface {
+	Process(*http.Request) (request.Descriptor, error)
 }
 
-type Monitor[T any] struct {
-	requester Requester[T]
+type Monitor struct {
+	requester Requester
 	request   *http.Request
 }
 
-func New[T any](requester Requester[T], request *http.Request) Monitor[T] {
-	return Monitor[T]{
+func New(requester Requester, request *http.Request) Monitor {
+	return Monitor{
 		requester: requester,
 		request:   request,
 	}
 }
 
-func (m Monitor[T]) Start(ctx context.Context, requestsNumber uint, interval time.Duration) <-chan request.Descriptor[T] {
-	output := make(chan request.Descriptor[T])
+func (m Monitor) Start(ctx context.Context, requestsNumber uint, interval time.Duration) <-chan request.Descriptor {
+	output := make(chan request.Descriptor)
 	go func() {
 		defer close(output)
 		ticker := time.NewTicker(interval)
@@ -47,13 +47,13 @@ func (m Monitor[T]) Start(ctx context.Context, requestsNumber uint, interval tim
 	return output
 }
 
-func (m Monitor[T]) update(number uint, output chan<- request.Descriptor[T]) {
+func (m Monitor) update(number uint, output chan<- request.Descriptor) {
 	for i := 0; i < int(number); i++ {
 		m.singleUpdate(output)
 	}
 }
 
-func (m Monitor[T]) singleUpdate(output chan<- request.Descriptor[T]) {
+func (m Monitor) singleUpdate(output chan<- request.Descriptor) {
 	desc, err := m.requester.Process(m.request)
 	if err != nil {
 		slog.Error("monitor failed to process a request", "error", err)

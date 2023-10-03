@@ -6,7 +6,17 @@ import (
 	"time"
 )
 
-type Descriptor[T any] struct {
+type Currency struct {
+	Name  string
+	Rates []Rates
+}
+
+type Rates struct {
+	Date  time.Time
+	Value float64
+}
+
+type Descriptor struct {
 	ID              string
 	URL             string
 	Time            time.Time
@@ -14,10 +24,10 @@ type Descriptor[T any] struct {
 	JSON            bool
 	Valid           bool
 	Duration        time.Duration
-	Payload         T
+	Payload         Currency
 }
 
-func (d Descriptor[T]) WriteTo(w io.Writer) (int64, error) {
+func (d Descriptor) WriteTo(w io.Writer) (int64, error) {
 	str := fmt.Sprintf("request id=%v url=%v time=%v validStatusCode=%v json=%v validJson=%v duration=%v\n",
 		d.ID, d.URL, d.Time, d.ValidStatusCode, d.JSON, d.Valid, d.Duration)
 	n, err := io.WriteString(w, str)

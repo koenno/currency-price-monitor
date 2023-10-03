@@ -12,7 +12,7 @@ import (
 
 func TestShouldContinueWritingElementsDespiteOfError(t *testing.T) {
 	// given
-	input := make(chan Descriptor[string], 2)
+	input := make(chan Descriptor, 2)
 	input <- newDescriptor("1")
 	input <- newDescriptor("2")
 	close(input)
@@ -36,8 +36,8 @@ func TestShouldContinueWritingElementsDespiteOfError(t *testing.T) {
 	assert.Equal(t, 2, callCnt)
 }
 
-func newDescriptor(ID string) Descriptor[string] {
-	return Descriptor[string]{
+func newDescriptor(ID string) Descriptor {
+	return Descriptor{
 		ID:              ID,
 		URL:             "http://some/domain.com",
 		Time:            time.Time{},
@@ -45,6 +45,6 @@ func newDescriptor(ID string) Descriptor[string] {
 		JSON:            true,
 		Valid:           true,
 		Duration:        0,
-		Payload:         "",
+		Payload:         Currency{},
 	}
 }
