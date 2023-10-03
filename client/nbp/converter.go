@@ -17,7 +17,7 @@ func NewConverter() Converter {
 
 func (c Converter) Convert(from CurrencyResponse) request.Currency {
 	result := request.Currency{
-		Name:  from.Currency,
+		Name:  from.Code,
 		Rates: []request.Rates{},
 	}
 	for _, fromRate := range from.Rates {
