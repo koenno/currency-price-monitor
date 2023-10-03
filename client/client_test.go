@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,9 +14,10 @@ func TestShouldReturnErrorWhenResponseStatusCodeIsNotSuccessful(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
+	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
 
 	// when
-	desc, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Process[string](req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponse)
@@ -36,9 +36,10 @@ func TestShouldReturnErrorWhenContentTypeIsNotJSON(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("content-type", "application/xml")
 	}))
+	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
 
 	// when
-	desc, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Process[string](req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
@@ -58,9 +59,10 @@ func TestShouldReturnErrorWhenJSONIsInvalid(t *testing.T) {
 		w.Header().Add("content-type", "application/json")
 		w.Write([]byte(`{ "invalidJson": true `))
 	}))
+	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
 
 	// when
-	desc, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Process[string](req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
@@ -88,9 +90,10 @@ func TestShouldFillAllDescriptorDataWhenNoError(t *testing.T) {
 		w.Header().Add("content-type", "application/json")
 		json.NewEncoder(w).Encode(expectedPayload)
 	}))
+	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
 
 	// when
-	desc, err := Request[payload](context.Background(), fakeServer.URL)
+	desc, err := Process[payload](req)
 
 	// then
 	assert.NoError(t, err)

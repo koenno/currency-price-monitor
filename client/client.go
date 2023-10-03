@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,17 +23,13 @@ var (
 	}
 )
 
-func Request[T any](ctx context.Context, URL string) (request.Descriptor[T], error) {
+func Process[T any](req *http.Request) (request.Descriptor[T], error) {
 	desc := request.Descriptor[T]{
 		ID:   uuid.NewString(),
-		URL:  URL,
+		URL:  req.URL.String(),
 		Time: time.Now(),
 	}
-	slog.Info("request", "id", desc.ID, "url", URL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, URL, nil)
-	if err != nil {
-		return desc, fmt.Errorf("request failure: unable to create a request: %v", err)
-	}
+	slog.Info("request", "id", desc.ID, "url", desc.URL)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
