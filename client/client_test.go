@@ -15,9 +15,10 @@ func TestShouldReturnErrorWhenResponseStatusCodeIsNotSuccessful(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
+	sut := New[string]()
 
 	// when
-	desc, err := Process[string](req)
+	desc, err := sut.Process(req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponse)
@@ -37,9 +38,10 @@ func TestShouldReturnErrorWhenContentTypeIsNotJSON(t *testing.T) {
 		w.Header().Add("content-type", "application/xml")
 	}))
 	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
+	sut := New[string]()
 
 	// when
-	desc, err := Process[string](req)
+	desc, err := sut.Process(req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
@@ -60,9 +62,10 @@ func TestShouldReturnErrorWhenJSONIsInvalid(t *testing.T) {
 		w.Write([]byte(`{ "invalidJson": true `))
 	}))
 	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
+	sut := New[string]()
 
 	// when
-	desc, err := Process[string](req)
+	desc, err := sut.Process(req)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
@@ -87,13 +90,14 @@ func TestShouldFillAllDescriptorDataWhenNoError(t *testing.T) {
 		Number: 234,
 	}
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("content-type", "application/json")
+		w.Header().Add("content-type", "application/json; charset=utf-8")
 		json.NewEncoder(w).Encode(expectedPayload)
 	}))
 	req, _ := http.NewRequest(http.MethodGet, fakeServer.URL, nil)
+	sut := New[payload]()
 
 	// when
-	desc, err := Process[payload](req)
+	desc, err := sut.Process(req)
 
 	// then
 	assert.NoError(t, err)

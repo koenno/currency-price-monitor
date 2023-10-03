@@ -70,12 +70,33 @@ func (c CurrencyClient) NewRequest(ctx context.Context, opts ...RequestOption) (
 	rawURL := fmt.Sprintf("http://%s/%s/%d", c.domain, endpoint, cfg.historyInDays)
 	URL, err := url.Parse(rawURL)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create a request: %v", err)
+		return nil, fmt.Errorf("unable to create url: %v", err)
 	}
 
 	q := URL.Query()
 	q.Set("format", string(cfg.format))
 	URL.RawQuery = q.Encode()
 
-	return http.NewRequestWithContext(ctx, http.MethodGet, URL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, URL.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create a request: %v", err)
+	}
+
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "currency-price-monitor")
+
+	return req, nil
+}
+
+type CurrencyResponse struct {
+	Table    string  `json:"table"`
+	Currency string  `json:"currency"`
+	Code     string  `json:"code"`
+	Rates    []Rates `json:"rates"`
+}
+
+type Rates struct {
+	No            string  `json:"no"`
+	EffectiveDate string  `json:"effectiveDate"`
+	Mid           float64 `json:"mid"`
 }

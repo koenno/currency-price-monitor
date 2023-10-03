@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,7 +24,14 @@ var (
 	}
 )
 
-func Process[T any](req *http.Request) (request.Descriptor[T], error) {
+type Client[T any] struct {
+}
+
+func New[T any]() Client[T] {
+	return Client[T]{}
+}
+
+func (c Client[T]) Process(req *http.Request) (request.Descriptor[T], error) {
 	desc := request.Descriptor[T]{
 		ID:   uuid.NewString(),
 		URL:  req.URL.String(),
@@ -47,10 +55,10 @@ func Process[T any](req *http.Request) (request.Descriptor[T], error) {
 	desc.ValidStatusCode = resp.StatusCode == http.StatusOK
 	slog.Info("request", "id", desc.ID, "validStatusCode", desc.ValidStatusCode)
 	if resp.StatusCode != http.StatusOK {
-		return desc, fmt.Errorf("%w: status code %d", ErrResponse, resp.StatusCode)
+		return desc, fmt.Errorf("%w: status code %d; body %s", ErrResponse, resp.StatusCode, string(payloadBytes))
 	}
 
-	desc.JSON = resp.Header.Get("content-type") == "application/json"
+	desc.JSON = strings.Contains(resp.Header.Get("content-type"), "application/json")
 	slog.Info("request", "id", desc.ID, "validContentType", desc.JSON)
 	if !desc.JSON {
 		return desc, fmt.Errorf("%w: unsupported %s", ErrResponsePayload, resp.Header.Get("content-type"))

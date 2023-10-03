@@ -18,7 +18,7 @@ type Descriptor[T any] struct {
 }
 
 func (d Descriptor[T]) WriteTo(w io.Writer) (int64, error) {
-	str := fmt.Sprintf("request id=%v url=%v time=%v validStatusCode=%v json=%v validJson=%v duration=%v",
+	str := fmt.Sprintf("request id=%v url=%v time=%v validStatusCode=%v json=%v validJson=%v duration=%v\n",
 		d.ID, d.URL, d.Time, d.ValidStatusCode, d.JSON, d.Valid, d.Duration)
 	n, err := io.WriteString(w, str)
 	return int64(n), err
