@@ -57,7 +57,6 @@ func (m Monitor[T]) singleUpdate(output chan<- request.Descriptor[T]) {
 	desc, err := m.requester.Process(m.request)
 	if err != nil {
 		slog.Error("monitor failed to process a request", "error", err)
-		return
 	}
 	output <- desc
 }

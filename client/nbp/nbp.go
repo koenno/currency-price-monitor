@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"golang.org/x/text/currency"
 )
@@ -34,7 +35,7 @@ type options struct {
 func defaultOptions() *options {
 	return &options{
 		historyInDays: 1,
-		currencyUnit:  currency.USD,
+		currencyUnit:  currency.EUR,
 		format:        FormatJSON,
 	}
 }
@@ -66,8 +67,9 @@ func (c CurrencyClient) NewRequest(ctx context.Context, opts ...RequestOption) (
 		o(cfg)
 	}
 
-	endpoint := "api/exchangerates/rates/a/eur/last"
-	rawURL := fmt.Sprintf("http://%s/%s/%d", c.domain, endpoint, cfg.historyInDays)
+	endpoint := "api/exchangerates/rates/a"
+	rawURL := fmt.Sprintf("http://%s/%s/%s/last/%d",
+		c.domain, endpoint, strings.ToLower(cfg.currencyUnit.String()), cfg.historyInDays)
 	URL, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create url: %v", err)
