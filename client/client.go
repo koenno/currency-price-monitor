@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/koenno/currency-price-monitor/request"
-	"golang.org/x/exp/slog"
 )
 
 var (
@@ -37,14 +36,12 @@ func (c Client[T]) Process(req *http.Request) (request.Descriptor[T], error) {
 		URL:  req.URL.String(),
 		Time: time.Now(),
 	}
-	slog.Info("request", "id", desc.ID, "url", desc.URL)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return desc, fmt.Errorf("%w: %v", ErrSendRequest, err)
 	}
 	desc.Duration = time.Since(desc.Time)
-	slog.Info("request", "id", desc.ID, "duration", desc.Duration)
 
 	defer resp.Body.Close()
 	payloadBytes, err := io.ReadAll(resp.Body)
@@ -53,19 +50,16 @@ func (c Client[T]) Process(req *http.Request) (request.Descriptor[T], error) {
 	}
 
 	desc.ValidStatusCode = resp.StatusCode == http.StatusOK
-	slog.Info("request", "id", desc.ID, "validStatusCode", desc.ValidStatusCode)
 	if resp.StatusCode != http.StatusOK {
 		return desc, fmt.Errorf("%w: status code %d; body %s", ErrResponse, resp.StatusCode, string(payloadBytes))
 	}
 
 	desc.JSON = strings.Contains(resp.Header.Get("content-type"), "application/json")
-	slog.Info("request", "id", desc.ID, "validContentType", desc.JSON)
 	if !desc.JSON {
 		return desc, fmt.Errorf("%w: unsupported %s", ErrResponsePayload, resp.Header.Get("content-type"))
 	}
 
 	desc.Valid = json.Valid(payloadBytes)
-	slog.Info("request", "id", desc.ID, "validJson", desc.Valid)
 	if !desc.Valid {
 		return desc, fmt.Errorf("%w: invalid json", ErrResponsePayload)
 	}
