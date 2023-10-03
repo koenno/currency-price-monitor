@@ -17,11 +17,18 @@ func TestShouldReturnErrorWhenResponseStatusCodeIsNotSuccessful(t *testing.T) {
 	}))
 
 	// when
-	resp, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Request[string](context.Background(), fakeServer.URL)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponse)
-	assert.Equal(t, ResponseDescriptor[string]{}, resp)
+	assert.NotZero(t, desc.ID)
+	assert.NotZero(t, desc.Time)
+	assert.Equal(t, fakeServer.URL, desc.URL)
+	assert.False(t, desc.ValidStatusCode)
+	assert.False(t, desc.JSON)
+	assert.False(t, desc.Valid)
+	assert.NotZero(t, desc.Duration)
+	assert.Zero(t, desc.Payload)
 }
 
 func TestShouldReturnErrorWhenContentTypeIsNotJSON(t *testing.T) {
@@ -31,11 +38,18 @@ func TestShouldReturnErrorWhenContentTypeIsNotJSON(t *testing.T) {
 	}))
 
 	// when
-	resp, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Request[string](context.Background(), fakeServer.URL)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
-	assert.Equal(t, ResponseDescriptor[string]{}, resp)
+	assert.NotZero(t, desc.ID)
+	assert.NotZero(t, desc.Time)
+	assert.Equal(t, fakeServer.URL, desc.URL)
+	assert.True(t, desc.ValidStatusCode)
+	assert.False(t, desc.JSON)
+	assert.False(t, desc.Valid)
+	assert.NotZero(t, desc.Duration)
+	assert.Zero(t, desc.Payload)
 }
 
 func TestShouldReturnErrorWhenJSONIsInvalid(t *testing.T) {
@@ -46,14 +60,21 @@ func TestShouldReturnErrorWhenJSONIsInvalid(t *testing.T) {
 	}))
 
 	// when
-	resp, err := Request[string](context.Background(), fakeServer.URL)
+	desc, err := Request[string](context.Background(), fakeServer.URL)
 
 	// then
 	assert.ErrorIs(t, err, ErrResponsePayload)
-	assert.Equal(t, ResponseDescriptor[string]{}, resp)
+	assert.NotZero(t, desc.ID)
+	assert.NotZero(t, desc.Time)
+	assert.Equal(t, fakeServer.URL, desc.URL)
+	assert.True(t, desc.ValidStatusCode)
+	assert.True(t, desc.JSON)
+	assert.False(t, desc.Valid)
+	assert.NotZero(t, desc.Duration)
+	assert.Zero(t, desc.Payload)
 }
 
-func TestShouldReturnResponseDescriptorWhenNoError(t *testing.T) {
+func TestShouldFillAllDescriptorDataWhenNoError(t *testing.T) {
 	// given
 	type payload struct {
 		Name   string
@@ -69,16 +90,16 @@ func TestShouldReturnResponseDescriptorWhenNoError(t *testing.T) {
 	}))
 
 	// when
-	resp, err := Request[payload](context.Background(), fakeServer.URL)
+	desc, err := Request[payload](context.Background(), fakeServer.URL)
 
 	// then
 	assert.NoError(t, err)
-	assert.NotZero(t, resp.ID)
-	assert.NotZero(t, resp.Time)
-	assert.Equal(t, fakeServer.URL, resp.URL)
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.True(t, resp.JSON)
-	assert.True(t, resp.Valid)
-	assert.NotZero(t, resp.Duration)
-	assert.Equal(t, expectedPayload, resp.Payload)
+	assert.NotZero(t, desc.ID)
+	assert.NotZero(t, desc.Time)
+	assert.Equal(t, fakeServer.URL, desc.URL)
+	assert.True(t, desc.ValidStatusCode)
+	assert.True(t, desc.JSON)
+	assert.True(t, desc.Valid)
+	assert.NotZero(t, desc.Duration)
+	assert.Equal(t, expectedPayload, desc.Payload)
 }
