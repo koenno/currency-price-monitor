@@ -105,7 +105,7 @@ func TestShouldFillAllDescriptorDataWhenNoError(t *testing.T) {
 
 	expectedCurrency := request.Currency{
 		Name: "eur",
-		Rates: []request.Rates{
+		Rates: []request.Rate{
 			{
 				Date:  newDate("2023-10-03"),
 				Value: 4.75,

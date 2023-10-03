@@ -27,7 +27,7 @@ func TestShouldConvertNBPData(t *testing.T) {
 			},
 		},
 	}
-	expectedRates := []request.Rates{
+	expectedRates := []request.Rate{
 		{
 			Date:  newDate(toConvert.Rates[0].EffectiveDate),
 			Value: toConvert.Rates[0].Mid,

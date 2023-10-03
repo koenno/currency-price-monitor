@@ -21,6 +21,9 @@ const (
 	requestsInterval = 5 * time.Second
 
 	logPath = "log.txt"
+
+	currencyRangeStart = 4.50
+	currencyRangeEnd   = 4.70
 )
 
 func main() {
@@ -45,8 +48,11 @@ func main() {
 
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	writer := processor.NewWriter[nbp.CurrencyResponse](multiWriter)
+	currencyIntervalWriter := processor.NewCurrencyIntervalNotifier(os.Stdout,
+		processor.ClosedInterval{A: currencyRangeStart, B: currencyRangeEnd})
 
 	sched := scheduler.NewScheduler()
 	sched.Register(writer)
+	sched.Register(currencyIntervalWriter)
 	sched.Process(ctx, requestsPipe)
 }

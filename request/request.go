@@ -8,12 +8,18 @@ import (
 
 type Currency struct {
 	Name  string
-	Rates []Rates
+	Rates []Rate
 }
 
-type Rates struct {
+type Rate struct {
 	Date  time.Time
 	Value float64
+}
+
+func (r Rate) WriteTo(w io.Writer) (int64, error) {
+	str := fmt.Sprintf("currency rate date=%v price=%v\n", r.Date, r.Value)
+	n, err := io.WriteString(w, str)
+	return int64(n), err
 }
 
 type Descriptor struct {

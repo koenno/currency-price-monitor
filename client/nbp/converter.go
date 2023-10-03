@@ -18,7 +18,7 @@ func NewConverter() Converter {
 func (c Converter) Convert(from CurrencyResponse) request.Currency {
 	result := request.Currency{
 		Name:  from.Code,
-		Rates: []request.Rates{},
+		Rates: []request.Rate{},
 	}
 	for _, fromRate := range from.Rates {
 		date, err := time.Parse(time.DateOnly, fromRate.EffectiveDate)
@@ -26,7 +26,7 @@ func (c Converter) Convert(from CurrencyResponse) request.Currency {
 			log.Printf("failed to convert date %s: %v", fromRate.EffectiveDate, err)
 			continue
 		}
-		result.Rates = append(result.Rates, request.Rates{
+		result.Rates = append(result.Rates, request.Rate{
 			Date:  date,
 			Value: fromRate.Mid,
 		})
