@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -18,9 +19,16 @@ const (
 	nbpDomain        = "api.nbp.pl"
 	requestsNo       = 10
 	requestsInterval = 5 * time.Second
+
+	logPath = "log.txt"
 )
 
 func main() {
+	logFile, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("failed to open a file %s: %v", logPath, err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -35,9 +43,10 @@ func main() {
 	monitorSvc := monitor.New[nbp.CurrencyResponse](mainClient, nbpReq)
 	requestsPipe := monitorSvc.Start(ctx, requestsNo, requestsInterval)
 
-	stdoutWriter := processor.NewWriter[nbp.CurrencyResponse](os.Stdout)
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	writer := processor.NewWriter[nbp.CurrencyResponse](multiWriter)
 
 	sched := scheduler.NewScheduler[nbp.CurrencyResponse]()
-	sched.Register(stdoutWriter)
+	sched.Register(writer)
 	sched.Process(ctx, requestsPipe)
 }
