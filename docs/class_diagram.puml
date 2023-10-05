@@ -1,0 +1,91 @@
+@startuml Class Diagram
+
+package http {
+    struct Request {}
+}
+
+package request {
+    struct Descriptor {}
+}
+
+package monitor {
+    interface Requester {
+        Process()
+    }
+
+    class Monitor {
+        +Start()
+    }
+
+    Monitor --> request.Descriptor : create
+    Monitor --> Requester : use
+    Monitor --> http.Request : use
+}
+
+package client {
+    interface Converter {
+        Convert()
+    }
+
+    class Client {
+        +Process()
+    }
+
+    Client --> Converter : use
+    Client --> http.Request : use
+    Client --> monitor.Requester : implement
+}
+
+package nbp {
+    class CurrencyClient {
+        +NewRequest()
+    }
+
+    CurrencyClient --> http.Request : create
+
+    class Converter {
+        +Convert()
+    }
+
+    Converter --> client.Converter : implement
+}
+
+
+
+package io {
+    interface Writer {
+        Write()
+    }
+}
+
+package scheduler {
+    interface Processor {
+        Process()
+    }
+
+    class Scheduler {
+        +Process()
+        +Register()
+    }
+
+    Scheduler --> Processor : use
+    Scheduler --> request.Descriptor : use
+}
+
+package processor {
+    class Writer {
+        +Process()
+    }
+
+    Writer --> scheduler.Processor : implement
+    Writer --> io.Writer : use
+
+    class CurrencyIntervalWriter {
+        +Process()
+    }
+
+    CurrencyIntervalWriter --> scheduler.Processor : implement
+    CurrencyIntervalWriter --> io.Writer : use
+}
+
+
